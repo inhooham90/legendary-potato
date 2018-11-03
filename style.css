@@ -1,0 +1,39 @@
+/* html {
+} */
+
+ul {
+    list-style: none;
+}
+
+a {
+  text-decoration: none;
+  color: black;
+  padding-right: 20px;
+}
+
+a:hover {
+  color: grey;
+}
+
+.small {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+canvas {
+  outline: 0;
+  margin-left: auto;
+  margin-right: auto;
+}
+div,img,li,ul{
+  margin: 0;
+  padding: 0;
+  padding-bottom: 5px;
+}
+
+body {
+  margin: 0px;
+  padding: 0px;
+  text-align: center;
+}
