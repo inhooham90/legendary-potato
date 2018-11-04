@@ -116,11 +116,15 @@ class Potato {
     this.frames = 0;
   }
 
-  move(direction){
-    if (direction === "right" && this.x < 650) {
+  move(move){
+    if (move === "right" && this.x < 650) {
       this.x += 2;
-    } else if (direction === "left" && this.x > 100) {
+    } else if (move === "left" && this.x > 180) {
       this.x -= 2;
+    } else if (move === "punch") {
+      this.frames = 1000;
+    } else if (move === "kick") {
+      this.frames = 2000;
     }
   }
 
@@ -130,24 +134,34 @@ class Potato {
     }
   }
 
-  draw({ ctx, foePos }) {
-    console.log("foe position", foePos)
-    console.log("char position", this.x)
-    this.frames += 1;
-    switch (this.frames) {
-            case 0:
-                this.sy = 0;
-                break;
-            case 60:
-                this.sy = 200;
-                break;
-            case 120:
-                this.frames = 0;
-                break;
-            default:
-                break;
-        }
-    if (foePos <= this.x) {
+  draw({ ctx, foe }) {
+    // console.log("foe position", foePos);
+    // console.log("char position", this.x);
+    this.frames += 5;
+    if (this.frames < 60) {
+      this.sy = 0;
+    } else if (this.frames < 120) {
+      this.sy = 200;
+    } else if (this.frames < 120) {
+      this.sy = 200;
+    } else if (this.frames > 120 && this.frames < 900) {
+      this.sy = 0;
+      this.frames = 0;
+    } else if (this.frames >= 1000 && this.frames <= 1030) {
+      this.sy = 400;
+    } else if (this.frames > 1030 && this.frames < 1900) {
+      this.sy = 0;
+      this.frames = 0;
+    } else if (this.frames > 2000 && this.frames <= 2040) {
+      this.sy = 800;
+    } else if (this.frames > 2040 && this.frames <= 2070) {
+      this.sy = 1000;
+    } else if (this.frames > 2070) {
+      this.sy = 0;
+      this.frames = 0;
+    }
+
+    if (foe.x <= this.x) {
       this.sx = 200;
     } else {
       this.sx = 0;
@@ -190,12 +204,12 @@ class Game {
   }
 
   addPotatoOne() {
-    this.potatoOne = new _characters_potatoes_js__WEBPACK_IMPORTED_MODULE_0__["default"]([50, 250], 'TKD');
+    this.potatoOne = new _characters_potatoes_js__WEBPACK_IMPORTED_MODULE_0__["default"]([180, 210], 'TKD');
     return this.potatoOne;
   }
 
   addPotatoTwo() {
-    this.potatoTwo = new _characters_potatoes_js__WEBPACK_IMPORTED_MODULE_0__["default"]([600, 250], 'TKD');
+    this.potatoTwo = new _characters_potatoes_js__WEBPACK_IMPORTED_MODULE_0__["default"]([600, 210], 'TKD');
     return this.potatoTwo;
   }
 
@@ -203,17 +217,26 @@ class Game {
     window.frames += 1;
     this.ctx.clearRect(0, 0, 800, 600);
     this.stage.draw(this.ctx);
-    this.potatoOne.draw({ ctx: this.ctx, foePos: this.potatoTwo.x });
-    this.potatoTwo.draw({ ctx: this.ctx, foePos: this.potatoOne.x });
+    this.potatoOne.draw({ ctx: this.ctx, foe: this.potatoTwo });
+    this.potatoTwo.draw({ ctx: this.ctx, foe: this.potatoOne });
     if (window.rightPressed) {
       this.potatoOne.move("right");
     } else if (window.leftPressed) {
       this.potatoOne.move("left");
+    } else if (window.onePunch) {
+      this.potatoOne.move("punch");
+    } else if (window.oneKick) {
+      this.potatoOne.move("kick");
     }
+
     if (window.right) {
       this.potatoTwo.move("right");
     } else if (window.left) {
       this.potatoTwo.move("left");
+    } else if (window.twoPunch) {
+      this.potatoTwo.move("punch");
+    } else if (window.twoKick) {
+      this.potatoTwo.move("kick");
     }
 
 
@@ -282,7 +305,7 @@ class LevelOne {
   }
 
   draw(ctx) {
-    this.frames += 1;
+    this.frames += 5;
     switch (this.frames) {
             case 0:
                 this.sy = 0;
@@ -398,18 +421,46 @@ window.frames = 0;
 function keyDownHandler(e) {
     if (e.keyCode === 39) {
         e.preventDefault();
-        window.rightPressed = true;
+        window.right = true;
     } else if (e.keyCode === 37) {
         e.preventDefault();
-        window.leftPressed = true;
+        window.left = true;
+    }
+
+    if (e.keyCode === 188) {
+        e.preventDefault();
+        window.right = false;
+        window.left = false;
+        window.twoKick = true;
+        setTimeout(function(){ window.twoKick = false }, 70);
+    } else if (e.keyCode === 190) {
+        e.preventDefault();
+        window.right = false;
+        window.left = false;
+        window.twoPunch = true;
+        setTimeout(function(){ window.twoPunch = false }, 30)
     }
 
     if (e.keyCode === 68) {
         e.preventDefault();
-        window.right = true;
+        window.rightPressed = true;
     } else if (e.keyCode === 65) {
         e.preventDefault();
-        window.left = true;
+        window.leftPressed = true;
+    }
+
+    if (e.keyCode === 67) {
+        e.preventDefault();
+        window.rightPressed = false;
+        window.leftPressed = false;
+        window.oneKick = true;
+        setTimeout(function(){ window.oneKick = false }, 70);
+    } else if (e.keyCode === 86) {
+        e.preventDefault();
+        window.rightPressed = false;
+        window.leftPressed = false;
+        window.onePunch = true;
+        setTimeout(function(){ window.onePunch = false }, 30)
     }
 
 
@@ -417,18 +468,20 @@ function keyDownHandler(e) {
 
 function keyUpHandler(e) {
     if (e.keyCode === 39) {
-        window.rightPressed = false;
+        window.right = false;
     } else if (e.keyCode === 37) {
-        window.leftPressed = false;
+        window.left = false;
     }
+
 
     if (e.keyCode === 68) {
         e.preventDefault();
-        window.right = false;
+        window.rightPressed = false;
     } else if (e.keyCode === 65) {
         e.preventDefault();
-        window.left = false;
+        window.leftPressed = false;
     }
+
 }
 
 
