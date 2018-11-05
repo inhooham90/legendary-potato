@@ -97,9 +97,10 @@
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Potato; });
 class Potato {
-  constructor(pos, char) {
+  constructor(pos, char, player) {
     this.x = pos[0];
     this.y = pos[1];
+    this.dy = 0;
     this.sx = 0;
     this.sy = 0;
     this.sh = 200;
@@ -108,36 +109,100 @@ class Potato {
     this.height = 100;
     this.image = new Image();
     this.char = char;
+    this.player = player;
     if(char === "TKD") {
       this.image.src = "./images/TKD.png";
+      this.punch = { type:"punch", damage:5 };
+      this.kick = { type:"kick", damage:20 };
+      this.special = { type:"special", damage:25 };
+      this.hp = 250;
+    } else if (char === 'Ninja'){
+      this.image.src = "./images/TKD.png";
+      this.punch = { type:"punch", damage:5 };
+      this.kick = { type:"kick", damage:5 };
+      this.special = { type:"special", damage:10 };
+      this.hp = 200;
+      this.double = false;
     } else {
       this.image.src = "./images/TKD.png";
+      this.punch = { type:"punch", damage:5 };
+      this.kick = { type:"kick", damage:20 };
+      this.special = { type:"special", damage:25 };
+      this.hp = 250;
     }
+    this.jumping = false;
+    this.attacking = false;
+    this.right;
     this.frames = 0;
   }
 
   move(move){
     if (move === "right" && this.x < 650) {
-      this.x += 2;
+      this.x += 5;
     } else if (move === "left" && this.x > 180) {
-      this.x -= 2;
-    } else if (move === "punch") {
+      this.x -= 5;
+    } else if (move === "punch" && !this.jumping) {
       this.frames = 1000;
-    } else if (move === "kick") {
+    } else if (move === "kick" && !this.jumping) {
       this.frames = 2000;
+      this.attacking = true;
+    } else if (move === "punch" && this.jumping) {
+      this.frames = 7500;
+      this.attacking = true;
+    } else if (move === "kick" && this.jumping) {
+      this.frames = 8000;
+      this.attacking = true;
     }
   }
 
-  fall() {
-    if (this.grounded === false) {
-        this.dy = -10;
+  jump() {
+    if (this.y === 210 && !this.jumping) {
+      this.dy = 6;
+      this.jumping = true;
+      this.frames = 7000;
     }
   }
+
+  hit(attack) {
+    switch (attack.type) {
+      case "punch":
+        this.frames = 1500;
+        this.hp -= attack.damage;
+        if ( this.right ) {
+          this.x += 1;
+        } else {
+          this.x -= 1;
+        }
+        break;
+      case "kick":
+        this.frames = 1500;
+        this.hp -= attack.damage;
+        if ( this.right ) {
+          this.x += 3;
+        } else {
+          this.x -= 3;
+        }
+        break;
+      case "special":
+        this.frames = 1500;
+        this.hp -= attack.damage;
+        if ( this.right ) {
+          this.x += 6;
+        } else {
+          this.x -= 6;
+        }
+      default:
+        break;
+    }
+  }
+
+
 
   draw({ ctx, foe }) {
     // console.log("foe position", foePos);
     // console.log("char position", this.x);
-    this.frames += 5;
+    // console.log(this.hp)
+    this.frames += 10;
     if (this.frames < 60) {
       this.sy = 0;
     } else if (this.frames < 120) {
@@ -149,23 +214,48 @@ class Potato {
       this.frames = 0;
     } else if (this.frames >= 1000 && this.frames <= 1030) {
       this.sy = 400;
-    } else if (this.frames > 1030 && this.frames < 1900) {
+      if (this.frames === 1020 && Math.abs(this.x - foe.x) < 60) {
+        foe.hit(this.punch);
+      }
+    } else if (this.frames > 1030 && this.frames < 1500) {
       this.sy = 0;
       this.frames = 0;
+    } else if (this.frames >= 1500 && this.frames <= 1560) {
+      this.sy = 1400;
+      if (this.frames === 1560) {
+        this.frames = 0;
+      }
     } else if (this.frames > 2000 && this.frames <= 2040) {
       this.sy = 800;
+      if (this.frames === 2020 && Math.abs(this.x - foe.x) < 60) {
+        foe.hit(this.kick);
+      }
     } else if (this.frames > 2040 && this.frames <= 2070) {
       this.sy = 1000;
-    } else if (this.frames > 2070) {
-      this.sy = 0;
+      if (this.frames === 2070) {
+        this.frames = 0;
+      }
+    } else if (this.frames >= 7000 && this.frames < 7500 && this.jumping) {
+      this.sy = 1600;
+    } else if (this.frames >= 7500 && this.frames < 8000 && this.jumping) {
+      this.sy = 1800;
+    } else if (this.frames >= 8000 && this.frames < 8500 && this.jumping) {
+      this.sy = 2000;
+    } else {
       this.frames = 0;
     }
-
-    if (foe.x <= this.x) {
-      this.sx = 200;
-    } else {
-      this.sx = 0;
+     // else if (this.jumping || this.falling)
+    this.sx = this.x > foe.x ? 200 : 0;
+    this.right = this.x > foe.x ? true : false;
+    if (this.y < 120) {
+      this.dy = -6;
+    } else if (this.y > 210 && this.jumping) {
+      this.dy = 0;
+      this.y = 210;
+      this.jumping = false;
     }
+    this.y -= this.dy;
+
     ctx.drawImage(this.image, this.sx, this.sy, this.sw, this.sh, this.x, this.y, this.width, this.height);
   }
 }
@@ -204,12 +294,12 @@ class Game {
   }
 
   addPotatoOne() {
-    this.potatoOne = new _characters_potatoes_js__WEBPACK_IMPORTED_MODULE_0__["default"]([180, 210], 'TKD');
+    this.potatoOne = new _characters_potatoes_js__WEBPACK_IMPORTED_MODULE_0__["default"]([180, 210], 'TKD', 1);
     return this.potatoOne;
   }
 
   addPotatoTwo() {
-    this.potatoTwo = new _characters_potatoes_js__WEBPACK_IMPORTED_MODULE_0__["default"]([600, 210], 'TKD');
+    this.potatoTwo = new _characters_potatoes_js__WEBPACK_IMPORTED_MODULE_0__["default"]([600, 210], 'TKD', 2);
     return this.potatoTwo;
   }
 
@@ -229,6 +319,10 @@ class Game {
       this.potatoOne.move("kick");
     }
 
+    if (window.jumpPressed) {
+      this.potatoOne.jump();
+    }
+
     if (window.right) {
       this.potatoTwo.move("right");
     } else if (window.left) {
@@ -239,7 +333,20 @@ class Game {
       this.potatoTwo.move("kick");
     }
 
+    if (window.jump) {
+      this.potatoTwo.jump();
+    }
 
+
+    // if (!this.potatoOne.hp || !this.potatoTwo.hp) {
+    //   this.level === "one" ? this.level === "two" : this.over();
+    // };
+
+    if (this.potatoOne.hp < 0) {
+      console.log('Player 2 wins!')
+    } else if (this.potatoTwo.hp < 0) {
+      console.log('Player 1 wins!')
+    }
   }
 
 }
@@ -418,6 +525,9 @@ new _game_view_js__WEBPACK_IMPORTED_MODULE_1___default.a(game).start();
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 window.frames = 0;
+
+let heldKeys = {};
+
 function keyDownHandler(e) {
     if (e.keyCode === 39) {
         e.preventDefault();
@@ -427,18 +537,37 @@ function keyDownHandler(e) {
         window.left = true;
     }
 
+    if (e.keyCode === 38) {
+      e.preventDefault();
+      if (heldKeys[e.keyCode]) {
+        window.jump = false;
+      } else {
+        window.jump = true;
+      }
+      heldKeys[e.keyCode] = true;
+    }
+
     if (e.keyCode === 188) {
         e.preventDefault();
-        window.right = false;
-        window.left = false;
-        window.twoKick = true;
-        setTimeout(function(){ window.twoKick = false }, 70);
+        if (heldKeys[e.keyCode]) {
+          window.twoKick = false;
+        } else {
+          window.right = false;
+          window.left = false;
+          window.twoKick = true;
+        }
+        heldKeys[e.keyCode] = true;
     } else if (e.keyCode === 190) {
         e.preventDefault();
-        window.right = false;
-        window.left = false;
-        window.twoPunch = true;
-        setTimeout(function(){ window.twoPunch = false }, 30)
+        console.log(heldKeys)
+        if (heldKeys[e.keyCode]) {
+          window.twoPunch = false;
+        } else {
+          window.right = false;
+          window.left = false;
+          window.twoPunch = true;
+        }
+        heldKeys[e.keyCode] = true;
     }
 
     if (e.keyCode === 68) {
@@ -449,21 +578,37 @@ function keyDownHandler(e) {
         window.leftPressed = true;
     }
 
-    if (e.keyCode === 67) {
-        e.preventDefault();
-        window.rightPressed = false;
-        window.leftPressed = false;
-        window.oneKick = true;
-        setTimeout(function(){ window.oneKick = false }, 70);
-    } else if (e.keyCode === 86) {
-        e.preventDefault();
-        window.rightPressed = false;
-        window.leftPressed = false;
-        window.onePunch = true;
-        setTimeout(function(){ window.onePunch = false }, 30)
+    if (e.keyCode === 87) {
+      e.preventDefault();
+      if (heldKeys[e.keyCode]) {
+        window.jumpPressed = false;
+      } else {
+        window.jumpPressed = true;
+      }
+      heldKeys[e.keyCode] = true;
     }
 
-
+    if (e.keyCode === 67) {
+        e.preventDefault();
+        if (heldKeys[e.keyCode]) {
+          window.oneKick = false;
+        } else {
+          window.rightPressed = false;
+          window.leftPressed = false;
+          window.oneKick = true;
+        }
+        heldKeys[e.keyCode] = true;
+    } else if (e.keyCode === 86) {
+        e.preventDefault();
+        if (heldKeys[e.keyCode]) {
+          window.onePunch = false;
+        } else {
+          window.rightPressed = false;
+          window.leftPressed = false;
+          window.onePunch = true;
+        }
+        heldKeys[e.keyCode] = true;
+    }
 }
 
 function keyUpHandler(e) {
@@ -480,6 +625,40 @@ function keyUpHandler(e) {
     } else if (e.keyCode === 65) {
         e.preventDefault();
         window.leftPressed = false;
+    }
+
+    if (e.keyCode === 188) {
+        e.preventDefault();
+        window.twoKick = false;
+        delete heldKeys[e.keyCode];
+    } else if (e.keyCode === 190) {
+        e.preventDefault();
+        window.twoPunch = false;
+        delete heldKeys[e.keyCode];
+    }
+
+    if (e.keyCode === 67) {
+        e.preventDefault();
+        window.oneKick = false;
+        delete heldKeys[e.keyCode];
+
+    } else if (e.keyCode === 86) {
+        e.preventDefault();
+        window.onePunch = false;
+        delete heldKeys[e.keyCode];
+    }
+
+    if (e.keyCode === 38) {
+        e.preventDefault();
+        window.jump = false;
+        delete heldKeys[e.keyCode];
+
+    }
+
+    if (e.keyCode === 87) {
+        e.preventDefault();
+        window.jumpPressed = false;
+        delete heldKeys[e.keyCode];
     }
 
 }
