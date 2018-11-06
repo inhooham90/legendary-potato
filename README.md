@@ -54,4 +54,4 @@ Canvas with HTML5
 
 **Day 3:** Jump, jump attacks, sprite work, and lots of debugging and optimization with rendering.
 
-**Day 4:** Hp bar, vs sign, music, sprite art, and more optimization.
+**Day 4:** Hp bar, vs sign, music, sprite art, and more optimization. Player wins sound effect and plan starting page, character screen, and features.
