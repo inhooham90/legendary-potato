@@ -294,9 +294,8 @@ class Potato {
     }
     this.y -= this.dy;
     if (this.hp <= 0) {
-      this.sy = 2575;
+      this.sy = 2575;  
     }
-    // if (this.player === 2) {console.log(moving)}
     ctx.drawImage(this.image, this.sx, this.sy, this.sw, this.sh, this.x, this.y, this.width, this.height);
   }
 }
@@ -395,6 +394,7 @@ class Game {
       this.stage = new _levels_leveltwo_js__WEBPACK_IMPORTED_MODULE_2__["default"]();
     }
     this.middle = new _features_middle_js__WEBPACK_IMPORTED_MODULE_4__["default"]();
+    this.over = false;
   }
 
   addPotatoOne() {
@@ -418,6 +418,8 @@ class Game {
   }
 
   play() {
+    // console.log(this.potatoTwo.hp)
+    // console.log(this.over)
     window.frames += 1;
     this.ctx.clearRect(0, 0, 800, 600);
     this.stage.draw(this.ctx);
@@ -456,12 +458,13 @@ class Game {
     // if (!this.potatoOne.hp || !this.potatoTwo.hp) {
     //   this.level === "one" ? this.level === "two" : this.over();
     // };
-
-    // if (this.potatoOne.hp < 0) {
-    //   console.log('Player 2 wins!')
-    // } else if (this.potatoTwo.hp < 0) {
-    //   console.log('Player 1 wins!')
-    // }
+    if (!this.over && this.potatoOne.hp <= 0) {
+      window.playerTwo.play();
+      this.over = true;
+    } else if (!this.over && this.potatoTwo.hp <= 0) {
+      window.playerOne.play();
+      this.over = true;
+    }
   }
 
 }
@@ -652,6 +655,9 @@ snd.play();
 
 window.punch = new Audio("./audio/punch.mp3");
 window.kick = new Audio("./audio/kick.mp3");
+
+window.playerOne = new Audio("./audio/player1wins.mp3");
+window.playerTwo = new Audio("./audio/player2wins.mp3");
 
 let heldKeys = {};
 function keyDownHandler(e) {
