@@ -113,11 +113,11 @@ class Potato {
     if(char === "TKD") {
       this.image.src = "./images/TKD.png";
       this.punch = { type:"punch", damage:5 };
-      this.kick = { type:"kick", damage:20 };
+      this.kick = { type:"kick", damage:10 };
       this.special = { type:"special", damage:25 };
       this.hp = 250;
-    } else if (char === 'Ninja'){
-      this.image.src = "./images/TKD.png";
+    } else if (char === 'ninja'){
+      this.image.src = "./images/ninja.png";
       this.punch = { type:"punch", damage:5 };
       this.kick = { type:"kick", damage:5 };
       this.special = { type:"special", damage:10 };
@@ -131,42 +131,41 @@ class Potato {
       this.hp = 250;
     }
     this.jumping = false;
-    this.attacking = false;
-    this.right;
+    this.punching = false;
+    this.kicking = false;
+    this.moving = false;
     this.frames = 0;
   }
 
   move(move){
-    if (move === "right" && this.x < 650) {
+    if (move === "right" && this.x < 650 && this.hp > 0) {
       this.x += 5;
-    } else if (move === "left" && this.x > 180) {
+    } else if (move === "left" && this.x > 180 && this.hp > 0) {
       this.x -= 5;
-    } else if (move === "punch" && !this.jumping) {
-      this.frames = 1000;
-    } else if (move === "kick" && !this.jumping) {
-      this.frames = 2000;
-      this.attacking = true;
-    } else if (move === "punch" && this.jumping) {
-      this.frames = 7500;
-      this.attacking = true;
-    } else if (move === "kick" && this.jumping) {
-      this.frames = 8000;
-      this.attacking = true;
+    }
+    if (move === "punch") {
+      this.frames = 100;
+      this.punching = true;
+    } else if (move === "kick") {
+      this.frames = 200;
+      this.kicking = true;
     }
   }
 
   jump() {
-    if (this.y === 210 && !this.jumping) {
+    if (this.y === 210 && !this.jumping && this.hp > 0) {
       this.dy = 6;
+      this.kicking = false;
+      this.punching = false;
       this.jumping = true;
-      this.frames = 7000;
+      this.frames = 700;
     }
   }
 
   hit(attack) {
     switch (attack.type) {
       case "punch":
-        this.frames = 1500;
+        this.frames = 400;
         this.hp -= attack.damage;
         if ( this.right ) {
           this.x += 1;
@@ -175,7 +174,7 @@ class Potato {
         }
         break;
       case "kick":
-        this.frames = 1500;
+        this.frames = 400;
         this.hp -= attack.damage;
         if ( this.right ) {
           this.x += 3;
@@ -184,7 +183,7 @@ class Potato {
         }
         break;
       case "special":
-        this.frames = 1500;
+        this.frames = 400;
         this.hp -= attack.damage;
         if ( this.right ) {
           this.x += 6;
@@ -202,61 +201,159 @@ class Potato {
     // console.log("foe position", foePos);
     // console.log("char position", this.x);
     // console.log(this.hp)
-    this.frames += 10;
-    if (this.frames < 60) {
-      this.sy = 0;
-    } else if (this.frames < 120) {
+
+    if (this.player === 1 && (window.rightPressed || window.leftPressed)) {
+      this.moving = true;
+    } else if (this.player === 2 && (window.right || window.left)) {
+      this.moving = true;
+    } else {
+      this.moving = false;
+    }
+    this.frames += 5;
+    if (this.frames < 40) {
+      if (this.moving) {
+        this.sy = 2200;
+      } else {
+        this.sy = 0;
+      }
+    } else if ( this.frames >= 40 && this.frames <= 80) {
       this.sy = 200;
-    } else if (this.frames < 120) {
-      this.sy = 200;
-    } else if (this.frames > 120 && this.frames < 900) {
-      this.sy = 0;
-      this.frames = 0;
-    } else if (this.frames >= 1000 && this.frames <= 1030) {
-      this.sy = 400;
-      if (this.frames === 1020 && Math.abs(this.x - foe.x) < 60) {
+      if (this.moving) {
+        this.sy = 2400;
+      } else {
+        this.sy = 200;
+      }
+      if (this.frames === 80) {
+        // this.sy = 0;
+        this.frames = 0;
+      }
+    } else if (this.frames >= 100 && this.frames <= 110) {
+      if (this.jumping) {
+        this.sy = 1800;
+      } else {
+        this.sy = 400;
+      }
+      if (this.frames === 110 &&
+        Math.abs(this.x - foe.x) < 60 &&
+        Math.abs(this.y - foe.y) < 30 && this.hp > 0) {
         foe.hit(this.punch);
+        window.punch.play();
+      }
+      if (this.frames === 110) {
+        this.frames = 0;
       }
     } else if (this.frames > 1030 && this.frames < 1500) {
       this.sy = 0;
       this.frames = 0;
-    } else if (this.frames >= 1500 && this.frames <= 1560) {
+    } else if (this.frames >= 400 && this.frames <= 430) {
       this.sy = 1400;
-      if (this.frames === 1560) {
+      if (this.frames === 430) {
         this.frames = 0;
       }
-    } else if (this.frames > 2000 && this.frames <= 2040) {
-      this.sy = 800;
-      if (this.frames === 2020 && Math.abs(this.x - foe.x) < 60) {
+    } else if (this.frames > 200 && this.frames <= 220) {
+      if (this.jumping) {
+        this.sy = 2000;
+      } else {
+        this.sy = 800;
+      }
+      if (this.frames === 210 &&
+        Math.abs(this.x - foe.x) < 60 &&
+        Math.abs(this.y - foe.y) < 80  && this.hp > 0) {
         foe.hit(this.kick);
+        window.kick.play();
       }
-    } else if (this.frames > 2040 && this.frames <= 2070) {
+    } else if (this.frames > 220 && this.frames <= 230) {
       this.sy = 1000;
-      if (this.frames === 2070) {
+      if (this.frames === 230) {
         this.frames = 0;
       }
-    } else if (this.frames >= 7000 && this.frames < 7500 && this.jumping) {
-      this.sy = 1600;
-    } else if (this.frames >= 7500 && this.frames < 8000 && this.jumping) {
-      this.sy = 1800;
-    } else if (this.frames >= 8000 && this.frames < 8500 && this.jumping) {
-      this.sy = 2000;
+    } else if (this.frames >= 700 && this.frames < 800 && this.jumping) {
+      // if (this.punching) {
+      //   this.sy = 1800;
+      // } else if (this.kicking) {
+      //   this.sy = 2000;
+      // } else {
+        this.sy = 1600;
+      // }
     } else {
       this.frames = 0;
+      this.punching = false;
+      this.kicking = false;
     }
-     // else if (this.jumping || this.falling)
+
     this.sx = this.x > foe.x ? 200 : 0;
     this.right = this.x > foe.x ? true : false;
+
     if (this.y < 120) {
-      this.dy = -6;
+      this.dy = -7;
     } else if (this.y > 210 && this.jumping) {
+      this.frames = 0;
       this.dy = 0;
       this.y = 210;
       this.jumping = false;
     }
     this.y -= this.dy;
-
+    if (this.hp <= 0) {
+      this.sy = 2575;
+    }
+    // if (this.player === 2) {console.log(moving)}
     ctx.drawImage(this.image, this.sx, this.sy, this.sw, this.sh, this.x, this.y, this.width, this.height);
+  }
+}
+
+
+/***/ }),
+
+/***/ "./lib/features/healthbar.js":
+/*!***********************************!*\
+  !*** ./lib/features/healthbar.js ***!
+  \***********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Health; });
+class Health {
+  constructor(pos, hp) {
+    this.x = pos[0];
+    this.y = pos[1];
+    this.width = 300;
+    this.max = hp;
+    this.height = 30;
+  }
+
+  draw({ ctx, healthbar }) {
+    ctx.beginPath();
+    let hp = this.width * (healthbar/this.max) > 0 ? this.width * (healthbar/this.max) : 0;
+    ctx.rect(this.x, this.y, hp, this.height);
+    ctx.fillStyle = hp < 50 ? "#f44242" : hp > 175 ? "#0095DD" : "#ffff19"
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+
+/***/ }),
+
+/***/ "./lib/features/middle.js":
+/*!********************************!*\
+  !*** ./lib/features/middle.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Middle; });
+class Middle {
+  constructor() {
+    this.image = new Image();
+    this.image.src = './images/gauge.png';
+  }
+
+  draw(ctx) {
+    ctx.drawImage(this.image, 326, 10, 150, 100);
   }
 }
 
@@ -276,6 +373,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _characters_potatoes_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./characters/potatoes.js */ "./lib/characters/potatoes.js");
 /* harmony import */ var _levels_levelone_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./levels/levelone.js */ "./lib/levels/levelone.js");
 /* harmony import */ var _levels_leveltwo_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./levels/leveltwo.js */ "./lib/levels/leveltwo.js");
+/* harmony import */ var _features_healthbar_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./features/healthbar.js */ "./lib/features/healthbar.js");
+/* harmony import */ var _features_middle_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./features/middle.js */ "./lib/features/middle.js");
+
+
 
 
 
@@ -285,12 +386,15 @@ class Game {
     this.ctx = ctx;
     this.potatoOne = null;
     this.potatoTwo = null;
+    this.hpOne = null;
+    this.hpTwo = null;
     this.level = 'one';
     if (this.level === 'one') {
       this.stage = new _levels_levelone_js__WEBPACK_IMPORTED_MODULE_1__["default"]();
     } else if (this.level === 'two') {
       this.stage = new _levels_leveltwo_js__WEBPACK_IMPORTED_MODULE_2__["default"]();
     }
+    this.middle = new _features_middle_js__WEBPACK_IMPORTED_MODULE_4__["default"]();
   }
 
   addPotatoOne() {
@@ -299,16 +403,29 @@ class Game {
   }
 
   addPotatoTwo() {
-    this.potatoTwo = new _characters_potatoes_js__WEBPACK_IMPORTED_MODULE_0__["default"]([600, 210], 'TKD', 2);
+    this.potatoTwo = new _characters_potatoes_js__WEBPACK_IMPORTED_MODULE_0__["default"]([600, 210], 'ninja', 2);
     return this.potatoTwo;
+  }
+
+  addHPOne() {
+    this.hpOne = new _features_healthbar_js__WEBPACK_IMPORTED_MODULE_3__["default"]([50, 30], this.potatoOne.hp);
+    return this.hpOne;
+  }
+
+  addHPTwo() {
+    this.hpTwo = new _features_healthbar_js__WEBPACK_IMPORTED_MODULE_3__["default"]([450, 30], this.potatoTwo.hp);
+    return this.hpTwo;
   }
 
   play() {
     window.frames += 1;
     this.ctx.clearRect(0, 0, 800, 600);
     this.stage.draw(this.ctx);
+    this.hpOne.draw({ ctx: this.ctx, healthbar: this.potatoOne.hp })
+    this.hpTwo.draw({ ctx: this.ctx, healthbar: this.potatoTwo.hp })
     this.potatoOne.draw({ ctx: this.ctx, foe: this.potatoTwo });
     this.potatoTwo.draw({ ctx: this.ctx, foe: this.potatoOne });
+    this.middle.draw(this.ctx)
     if (window.rightPressed) {
       this.potatoOne.move("right");
     } else if (window.leftPressed) {
@@ -318,7 +435,6 @@ class Game {
     } else if (window.oneKick) {
       this.potatoOne.move("kick");
     }
-
     if (window.jumpPressed) {
       this.potatoOne.jump();
     }
@@ -332,7 +448,6 @@ class Game {
     } else if (window.twoKick) {
       this.potatoTwo.move("kick");
     }
-
     if (window.jump) {
       this.potatoTwo.jump();
     }
@@ -342,11 +457,11 @@ class Game {
     //   this.level === "one" ? this.level === "two" : this.over();
     // };
 
-    if (this.potatoOne.hp < 0) {
-      console.log('Player 2 wins!')
-    } else if (this.potatoTwo.hp < 0) {
-      console.log('Player 1 wins!')
-    }
+    // if (this.potatoOne.hp < 0) {
+    //   console.log('Player 2 wins!')
+    // } else if (this.potatoTwo.hp < 0) {
+    //   console.log('Player 1 wins!')
+    // }
   }
 
 }
@@ -366,6 +481,8 @@ class GameView {
         this.game = game;
         this.potatoOne = this.game.addPotatoOne();
         this.potatoTwo = this.game.addPotatoTwo();
+        this.hpOne = this.game.addHPOne();
+        this.hpTwo = this.game.addHPTwo();
     }
 
     start() {
@@ -526,8 +643,17 @@ document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 window.frames = 0;
 
-let heldKeys = {};
+const snd = new Audio("./audio/bg.mp3");
+snd.addEventListener("ended", function () {
+    this.currentTime = 0;
+    this.play();
+}, false);
+snd.play();
 
+window.punch = new Audio("./audio/punch.mp3");
+window.kick = new Audio("./audio/kick.mp3");
+
+let heldKeys = {};
 function keyDownHandler(e) {
     if (e.keyCode === 39) {
         e.preventDefault();
@@ -552,19 +678,14 @@ function keyDownHandler(e) {
         if (heldKeys[e.keyCode]) {
           window.twoKick = false;
         } else {
-          window.right = false;
-          window.left = false;
           window.twoKick = true;
         }
         heldKeys[e.keyCode] = true;
     } else if (e.keyCode === 190) {
         e.preventDefault();
-        console.log(heldKeys)
         if (heldKeys[e.keyCode]) {
           window.twoPunch = false;
         } else {
-          window.right = false;
-          window.left = false;
           window.twoPunch = true;
         }
         heldKeys[e.keyCode] = true;
@@ -593,8 +714,6 @@ function keyDownHandler(e) {
         if (heldKeys[e.keyCode]) {
           window.oneKick = false;
         } else {
-          window.rightPressed = false;
-          window.leftPressed = false;
           window.oneKick = true;
         }
         heldKeys[e.keyCode] = true;
@@ -603,11 +722,18 @@ function keyDownHandler(e) {
         if (heldKeys[e.keyCode]) {
           window.onePunch = false;
         } else {
-          window.rightPressed = false;
-          window.leftPressed = false;
           window.onePunch = true;
         }
         heldKeys[e.keyCode] = true;
+    }
+
+    if (e.keyCode === 80) {
+      e.preventDefault();
+      if (snd.paused) {
+          snd.play();
+      } else {
+          snd.pause();
+      }
     }
 }
 

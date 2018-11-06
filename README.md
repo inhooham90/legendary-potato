@@ -50,4 +50,8 @@ Canvas with HTML5
 
 
 
-**Day 2:** Create background, TaeKwonDo Potato Sprite, implement movement/position and rendering logic, and finalize game plan. Implement animation for punches and kicks. Set up push backs, attack types and damage rate, rough draft of health point system, and minor collosion logic.
+**Day 2:** Create background, TaeKwonDo Potato Sprite, implement movement/position and rendering logic, and finalize game plan. Implement animation for punches and kicks. Set up push backs, attack types and damage rate, rough draft of health point system, and minor collision logic.
+
+**Day 3:** Jump, jump attacks, sprite work, and lots of debugging and optimization with rendering.
+
+**Day 4:** Hp bar, vs sign, music, sprite art, and more optimization.
