@@ -15,6 +15,15 @@ a:hover {
   color: grey;
 }
 
+.instruction {
+  display: flex;
+  list-style: none;
+  justify-content: space-around;
+  align-items: center;
+  font-family: sans-serif;
+  margin: 1% 20% 0 20%;
+}
+
 .small {
     display: flex;
     flex-direction: row;

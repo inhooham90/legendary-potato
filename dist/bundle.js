@@ -119,7 +119,7 @@ class Potato {
     } else if (char === 'ninja'){
       this.image.src = "./images/ninja.png";
       this.punch = { type:"punch", damage:5 };
-      this.kick = { type:"kick", damage:5 };
+      this.kick = { type:"kick", damage:10 };
       this.special = { type:"special", damage:10 };
       this.hp = 200;
       this.double = false;
@@ -294,7 +294,7 @@ class Potato {
     }
     this.y -= this.dy;
     if (this.hp <= 0) {
-      this.sy = 2575;  
+      this.sy = 2575;
     }
     ctx.drawImage(this.image, this.sx, this.sy, this.sw, this.sh, this.x, this.y, this.width, this.height);
   }
